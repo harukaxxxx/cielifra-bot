@@ -1,0 +1,47 @@
+name: Generate contributions
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    if: github.repository == 'a3510377/discord-py-cord-template'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.9"
+
+      - name: Install dependencies
+        run: pip install requests
+
+      - name: Generate contributions
+        run: python ./.github/contributions.py
+        env:
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+
+      - name: deploy
+        run: |
+          cd .github
+          git config --global user.name "$user_name"
+          git config --global user.email "$user_email"
+          git init
+          git add -f contributors.svg
+          git commit -m "${{ github.event.head_commit.message }}"
+          git push -f https://_:"$token"@github.com/"$repository".git "$ref_name":assets
+        shell: bash
+        env:
+          repository: ${{ github.repository }}
+          ref_name: master
+          token: ${{ secrets.GITHUB_TOKEN }}
+          user_name: GitHub Action
+          user_email: action@github.com
+          cname: none
