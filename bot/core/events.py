@@ -24,7 +24,7 @@ from bot import (
 _ = Translator(__name__)
 
 
-class BaseEventsCog(BaseCog):
+class BaseEventsCog(BaseCog, name="基礎事件"):
     @discord.Cog.listener()
     async def on_ready(self):
         bot = self.bot
@@ -107,6 +107,8 @@ class BaseEventsCog(BaseCog):
     ):
         self.log.exception(type(error).__name__, exc_info=error)
 
+
+class IMPCog(BaseCog, name="咒文讀取"):
     @discord.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         TRIGGER_REACTION = "🤩"
@@ -248,7 +250,6 @@ class BaseEventsCog(BaseCog):
                     # Send DM
                     try:
                         await dm_channel.send(embed=embed)
-                        print("normal sent")
                     except discord.errors.HTTPException as exception_occurred:
                         if exception_occurred.status == 400 and exception_occurred.code == 50035:
                             await dm_channel.send(
@@ -256,14 +257,13 @@ class BaseEventsCog(BaseCog):
                             )
                             await message.remove_reaction(TRIGGER_REACTION, reaction_member)
                             await message.add_reaction("❎")
-                            print("400 and 50035 error", exception_occurred)
                         else:
                             self.log.exception("An HTTPException occurred:", exception_occurred)
-                            print("error")
-                    self.log.info(f"DM sent to {reaction_member.name}.")
+                    self.log.info(_("咒文已私訊給{target}。").format(target=reaction_member.name))
             else:
                 await message.remove_reaction(TRIGGER_REACTION, reaction_member)
 
 
 def setup(bot: "Bot"):
     bot.add_cog(BaseEventsCog(bot))
+    bot.add_cog(IMPCog(bot))

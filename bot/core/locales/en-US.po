@@ -21,6 +21,11 @@ msgstr ""
 msgid "要查詢的指令"
 msgstr ""
 
+#: bot\core\events.py:262
+#, python-format
+msgid "咒文已私訊給{target}。"
+msgstr ""
+
 #: bot\core\help.py:76
 msgid "看起來某人很懶，並沒有留下任何東西 owo"
 msgstr ""
