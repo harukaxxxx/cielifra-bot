@@ -329,7 +329,7 @@ class IMPCog(BaseCog, name="咒文讀取"):
                     embed_fields.extend(parameter_field)
 
                     # add hires fields if exists
-                    if magic_data[magic_id]["parameters"]["Hires upscale"] is not "-":
+                    if magic_data[magic_id]["parameters"]["Hires upscale"] != "-":
                         hires_fields = [
                             {"name": "Hires info", "value": ""},
                             {
@@ -355,7 +355,7 @@ class IMPCog(BaseCog, name="咒文讀取"):
                         ]
                         embed_fields.extend(hires_fields)
                     # add lora hashes field
-                    if magic_data[magic_id]["parameters"]["Lora hashes"] is not "-":
+                    if magic_data[magic_id]["parameters"]["Lora hashes"] != "-":
                         lora_hashes_fields = [
                             {
                                 "name": "Lora hashes",

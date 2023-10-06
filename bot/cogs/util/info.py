@@ -37,20 +37,16 @@ class InfoCog(BaseCog, name="雜項"):
 
     @discord.slash_command(
         guild_only=False,
-        i18n_name=_("邀請連結"),
-        i18n_description=_("生成機器人邀請連結"),
+        i18n_name="邀請連結",
+        i18n_description="生成機器人邀請連結",
     )
     async def invite(self, ctx: ApplicationContext):
         bot = self.bot
-
-        await ctx.respond(
-            _("機器人邀請連結：{invite_url}").format(
-                invite_url=discord.utils.oauth_url(
-                    client_id=bot.application_id,
-                    permissions=discord.Permissions(permissions=2419452944),
-                )
-            )
+        invite_url = discord.utils.oauth_url(
+            client_id=bot.application_id,
+            permissions=discord.Permissions(permissions=2419452944),
         )
+        await ctx.respond(f"機器人邀請連結：{invite_url}")
 
 
 def setup(bot: "Bot"):
