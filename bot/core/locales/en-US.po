@@ -21,10 +21,16 @@ msgstr ""
 msgid "要查詢的指令"
 msgstr ""
 
-#: bot\core\events.py:262
+#: bot\core\events.py:419
 #, python-format
-msgid "咒文已私訊給{target}。"
+msgid ""
+"無限魔法投影已超出負荷，Cielifra 的法力正在耗盡！\n"
+"請手動下載 PNG 使用 sd-webui 的 PNG info 功能獲取咒文。\n"
+"原始訊息的連結是：{message_url}"
 msgstr ""
+"Infinite Magic Projection has exceeded its capacity, and Cielifra is running out of mana!\n"
+"Please download the PNG manually and place it in the sd-webui PNG INFO tab to obtain the parameters.\n"
+"The original link to the message is:{message_link}"
 
 #: bot\core\help.py:76
 msgid "看起來某人很懶，並沒有留下任何東西 owo"
