@@ -10,9 +10,9 @@ __all__ = (
     "fix_doc",
     "get_absolute_name_from_path",
     "generate_spell",
-    "extra_parameter",
-    "split_prompt",
-    "load_guild_params",
+    "get_parameters",
+    "get_remaining_parameters",
+    "split_parameter",
 )
 
 
@@ -125,24 +125,38 @@ def generate_spell(input_text):
     return random_spell
 
 
-def extra_parameter(parameter, scope):
-    start_index = parameter.find(scope)
+def get_parameters(parameters, scope):
+    start_index = parameters.find(scope)
     if start_index > 0:
-        parameter_length = parameter[start_index : len(parameter)].find(",")
+        parameter_length = parameters[start_index : len(parameters)].find(",")
         if parameter_length < 0:
-            parameter_length = len(parameter)
-        return parameter[start_index + len(scope) : start_index + parameter_length]
+            parameter_length = len(parameters)
+        return parameters[start_index + len(scope) : start_index + parameter_length]
     else:
         return "-"
 
 
-def split_prompt(prompt):
-    if len(prompt) > 1024:
-        parts = prompt.split(",")
+def get_remaining_parameters(parameters, extras):
+    remaining_parameters = extras
+    for parameter in parameters.keys():
+        start_index = remaining_parameters.find(f"{parameter}:")
+        if start_index >= 0:
+            end_index = remaining_parameters.find(",", start_index) + 2
+            if end_index < 0:
+                end_index = len(remaining_parameters)
+            remaining_parameters = (
+                remaining_parameters[:start_index] + remaining_parameters[end_index:]
+            )
+    return remaining_parameters.strip()
+
+
+def split_parameter(parameter):
+    if len(parameter) > 1024:
+        parts = parameter.split(",")
         result_list = []
         temp = ""
 
-        slice_num = len(prompt) / math.ceil(len(prompt) / 1024)
+        slice_num = len(parameter) / math.ceil(len(parameter) / 1024)
         if slice_num * 1.1 >= 1024:
             slice_num = 1024
         else:
@@ -157,7 +171,7 @@ def split_prompt(prompt):
         if temp:
             result_list.append(temp)
     else:
-        result_list = [prompt]
+        result_list = [parameter]
 
     return result_list
 
