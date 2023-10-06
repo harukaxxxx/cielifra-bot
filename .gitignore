@@ -152,3 +152,4 @@ cython_debug/
 #.idea/
 
 .github/contributors.svg
+logs/magics.json

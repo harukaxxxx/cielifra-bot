@@ -29,7 +29,7 @@ msgstr "Check bot online duration"
 msgid "機器人上線時間"
 msgstr "bot up time"
 
-#: bot\cogs\util\info.py:29
+#: bot\cogs\util\info.py:28
 #, python-format
 msgid "{days:02d}天 {hours:02d}小時 {minutes:02d}分鐘 {seconds:02d}秒"
 msgstr "{days:02d}d {hours:02d}h {minutes:02d}m {seconds:02d}s"

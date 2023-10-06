@@ -58,9 +58,7 @@ class BaseCogMeta(discord.CogMeta):
         attrs["__translator_name__"] = tr_name or TranslatorString.from_str(
             kwargs.get("name", name)
         )
-        attrs[
-            "__translator_description__"
-        ] = tr_description or TranslatorString.from_str(
+        attrs["__translator_description__"] = tr_description or TranslatorString.from_str(
             kwargs.get("description", fix_doc(attrs.get("__doc__", "")))
         )
 
