@@ -1,5 +1,9 @@
 import platform
-from datetime import datetime
+from datetime import datetime, timezone
+
+import io
+import os
+import json
 
 import discord
 from discord import DiscordException
@@ -8,11 +12,7 @@ from rich.box import MINIMAL
 from rich.columns import Columns
 from rich.panel import Panel
 from rich.table import Table
-import io
-import os
 from PIL import Image
-import json
-from datetime import datetime, timezone
 
 from bot import (
     ApplicationContext,
@@ -135,7 +135,7 @@ class IMPCog(BaseCog, name="咒文讀取"):
 
                     # find exists magic data
                     try:
-                        with open("logs/magics.json", "r") as file:
+                        with open("logs/magics.json", "r", encoding="utf-8") as file:
                             magic_dict = json.load(file)
                     except FileNotFoundError:
                         magic_dict = {}
@@ -233,14 +233,14 @@ class IMPCog(BaseCog, name="咒文讀取"):
                         except json.decoder.JSONDecodeError:
                             existing_magic_data = {}
 
-                        for id, data in magic_data.items():
-                            existing_magic_data[id] = data
+                        for magic_data_id, data in magic_data.items():
+                            existing_magic_data[magic_data_id] = data
 
                         with open("logs/magics.json", "w", encoding="utf-8") as file:
                             json.dump(existing_magic_data, file, ensure_ascii=False, indent=2)
 
                     # read magic data from magic.json
-                    with open("logs/magics.json", "r") as file:
+                    with open("logs/magics.json", "r", encoding="utf-8") as file:
                         magic_dict = json.load(file)
                     magic_data = {magic_id: magic_dict[magic_id]}
 
@@ -407,11 +407,6 @@ class IMPCog(BaseCog, name="咒文讀取"):
                     magic_embed = discord.Embed.from_dict(embed_dict)
 
                     # Send DM
-                    # embed = discord.Embed(
-                    #     title=magic_data["title"], description=magic_data["description"], colour=discord.Colour.from_rgb(magic_data["colour"](0), 0, 32), url=message_link
-                    # )
-                    # dm_channel = await reaction_member.create_dm()
-
                     dm_channel = await reaction_member.create_dm()
                     try:
                         await dm_channel.send(embed=magic_embed)
