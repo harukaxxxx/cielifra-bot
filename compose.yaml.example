@@ -8,8 +8,8 @@ services:
     environment:
       - DISCORD_TOKEN=
       - OWNER_IDS=
-      - IMP_TRIGGER_REACTION = "ℹ️"
-      - IMP_REJECT_REACTION = "❎"
+      - IMP_TRIGGER_REACTION=ℹ️
+      - IMP_REJECT_REACTION=❎
     volumes:
       - /volume1/docker/cielifra-bot:/base
     restart: unless-stopped
