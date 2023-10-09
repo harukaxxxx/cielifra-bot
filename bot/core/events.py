@@ -141,6 +141,7 @@ class IMPCog(BaseCog, name="咒文讀取"):
                         magic_dict = {}
                     if magic_id in magic_dict:
                         self.log.info(f"Cielifra 在魔法手帳目錄找到魔法 {magic_id}，正在努力翻找手帳…")
+                        vaild_attachment = True
                     else:
                         # check attachment is png which have parameters
                         if attachment.filename.endswith(".png"):
