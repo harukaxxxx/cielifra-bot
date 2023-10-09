@@ -9,6 +9,7 @@ from rich.columns import Columns
 from rich.panel import Panel
 from rich.table import Table
 import io
+import os
 from PIL import Image
 import json
 from datetime import datetime, timezone
@@ -25,6 +26,9 @@ from bot import (
 )
 
 _ = Translator(__name__)
+
+IMP_TRIGGER_REACTION = os.getenv("IMP_TRIGGER_REACTION")
+IMP_REJECT_REACTION = os.getenv("IMP_REJECT_REACTION")
 
 
 class BaseEventsCog(BaseCog, name="基礎事件"):
@@ -114,10 +118,8 @@ class BaseEventsCog(BaseCog, name="基礎事件"):
 class IMPCog(BaseCog, name="咒文讀取"):
     @discord.Cog.listener()
     async def on_raw_reaction_add(self, payload):
-        TRIGGER_REACTION = "🤩"
-        REJECT_REACTION = "❎"
         bot = self.bot
-        if payload.emoji.name == TRIGGER_REACTION:
+        if payload.emoji.name == IMP_TRIGGER_REACTION:
             reaction_member = payload.member
             guild = bot.get_guild(payload.member.guild.id)
             guild_id = guild.id
@@ -420,16 +422,16 @@ class IMPCog(BaseCog, name="咒文讀取"):
                                     "無限魔法投影已超出負荷，Cielifra 的法力正在耗盡！\n請手動下載 PNG 使用 sd-webui 的 PNG info 功能獲取咒文。\n原始訊息的連結是：{message_url}"
                                 ).format(message_url=message_link)
                             )
-                            await message.remove_reaction(TRIGGER_REACTION, reaction_member)
-                            await message.add_reaction(REJECT_REACTION)
+                            await message.remove_reaction(IMP_TRIGGER_REACTION, reaction_member)
+                            await message.add_reaction(IMP_REJECT_REACTION)
                         else:
                             self.log.exception("An HTTPException occurred:", exception_occurred)
                     self.log.info(f"Cielifra 成功將魔法 {magic_id} 的咒文私訊給 {reaction_member.name}了。")
                 if vaild_attachment is False:
-                    await message.remove_reaction(TRIGGER_REACTION, reaction_member)
-                    await message.add_reaction(REJECT_REACTION)
+                    await message.remove_reaction(IMP_TRIGGER_REACTION, reaction_member)
+                    await message.add_reaction(IMP_REJECT_REACTION)
             else:
-                await message.remove_reaction(TRIGGER_REACTION, reaction_member)
+                await message.remove_reaction(IMP_TRIGGER_REACTION, reaction_member)
 
 
 def setup(bot: "Bot"):
