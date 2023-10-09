@@ -1,18 +1,7 @@
 FROM python:3.11.4-alpine as base
 FROM base as builder
 
-RUN apk --no-cache add \
-  freetype-dev \
-  fribidi-dev \
-  harfbuzz-dev \
-  jpeg-dev \
-  lcms2-dev \
-  libimagequant-dev \
-  openjpeg-dev \
-  tcl-dev \
-  tiff-dev \
-  tk-dev \
-  zlib-dev
+RUN apk add zlib-dev jpeg-dev gcc musl-dev
 
 COPY requirements/prod.txt /requirements.txt
 RUN pip install --user -r /requirements.txt
