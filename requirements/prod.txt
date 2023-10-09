@@ -3,4 +3,4 @@ py-cord >= 2.0.0
 rich
 click
 python-dotenv
-Pillow
+Pillow == 9.5.0
