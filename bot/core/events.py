@@ -158,6 +158,8 @@ class IMPCog(BaseCog, name="咒文讀取"):
                                     )
                                 except KeyError:
                                     continue
+                        else:
+                            continue
 
                         # buildup magic data
                         title = f"『{generate_spell(magic_id)}』"
