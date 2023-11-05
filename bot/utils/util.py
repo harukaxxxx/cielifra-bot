@@ -1,19 +1,10 @@
 import inspect
-import hashlib
-import random
-import math
 import os
 import json
+
 from pathlib import Path
 
-__all__ = (
-    "fix_doc",
-    "get_absolute_name_from_path",
-    "generate_spell",
-    "get_parameters",
-    "get_remaining_parameters",
-    "split_parameter",
-)
+__all__ = ("fix_doc", "get_absolute_name_from_path")
 
 
 def fix_doc(*doc: str):
@@ -55,125 +46,6 @@ def get_absolute_name_from_path(
         paths.append(p.stem)
 
     return ".".join(reversed(paths))
-
-
-def generate_spell(input_text):
-    magic_spells = [
-        "⚡✨Zephyrus Alakazamia✨⚡",
-        "🌟✨Lumina Seraphicus✨🌟",
-        "🌌🌟Astra Eternus🌟🌌",
-        "🌙✨Mysticus Vorpalus✨🌙",
-        "🔥✨Solarius Incantatio✨🔥",
-        "🌪️✨Aquilo Spiralis✨🌪️",
-        "🐉🔥Ignis Draconis🔥🐉",
-        "🌿🌳Veridia Arborum🌳🌿",
-        "🌌⭐Celestis Mirabilis⭐🌌",
-        "🌑🌙Umbra Nocturna🌙🌑",
-        "✨⚡Divinus Fulgor⚡✨",
-        "🌧️🌊Tempestas Fluvius🌊🌧️",
-        "🌍🌱Terra Vitalis🌱🌍",
-        "🦅✨Volatus Levitas✨🦅",
-        "🔮✨Arcanus Omnipotens✨🔮",
-        "💜✨Amethysta Magica✨💜",
-        "🛡️✨Fortis Protego✨🛡️",
-        "❓🌌Enigma Invisus🌌❓",
-        "⚔️🌌Bellum Caelum🌌⚔️",
-        "🌳🌿Sylva Perpetua🌿🌳",
-        "🔥🌌Flamara Infernalis🌌🔥",
-        "✨🌌Aetherius Radiance🌌✨",
-        "🌐🔗Meridianus Nexus🔗🌐",
-        "🌈🌌Spectra Illusionis🌌🌈",
-        "🌌🔮Nexus Portentia🔮🌌",
-        "🕊️🌬️Volucris Velocitas🌬️🕊️",
-        "🔮🌌Mirus Transmutatio🌌🔮",
-        "⚡✨Fulgurante Lumine✨⚡",
-        "🌺🌟Harmonia Elysium🌟🌺",
-        "🌌✨Luminara Effervescens✨🌌",
-        "🌸✨Flora Viventia✨🌸",
-        "🔥🌪️Ignis Turbinis🌪️🔥",
-        "🌟🌌Stellae Infinitas🌌🌟",
-        "⚡🌊Fulgor Aqua🌊⚡",
-        "🌑🦉Umbra Noctua🦉🌑",
-        "🌞🌙Lux Lunaris🌙🌞",
-        "🍃✨Aura Vitalis✨🍃",
-        "🔮🌌Magia Arcana🌌🔮",
-        "🌹✨Rosaceus Lumina✨🌹",
-        "🌌🗝️Cosmos Clavis🗝️🌌",
-        "🌪️🌊Tempestas Mare🌊🌪️",
-        "🔥⚔️Ignis Gladius⚔️🔥",
-        "🌈🔮Iris Divinatio🔮🌈",
-        "💫✨Siderea Splendor✨💫",
-        "🌙🦋Noctis Papilio🦋🌙",
-        "🔥🌿Ignis Herba🌿🔥",
-        "⚡🌪️Fulgur Turbo🌪️⚡",
-        "🌌✨Astrum Luminis✨🌌",
-        "🌺🌊Flora Maris🌊🌺",
-        "🌙🔮Luna Divinatrix🔮🌙",
-        "🌟🌿Stella Viridis🌿🌟",
-    ]
-
-    # Convert to MD5 hash value
-    md5_hash = hashlib.md5(input_text.encode()).hexdigest()
-
-    # Convert MD5 hash value to integer
-    hash_int = int(md5_hash, 16)
-
-    # Randomly choose a spell
-    random.seed(hash_int)
-    random_spell = random.choice(magic_spells)
-
-    return random_spell
-
-
-def get_parameters(parameters, scope):
-    start_index = parameters.find(scope)
-    if start_index > 0:
-        parameter_length = parameters[start_index : len(parameters)].find(",")
-        if parameter_length < 0:
-            parameter_length = len(parameters)
-        return parameters[start_index + len(scope) : start_index + parameter_length]
-    else:
-        return "-"
-
-
-def get_remaining_parameters(parameters, extras):
-    remaining_parameters = extras
-    for parameter in parameters.keys():
-        start_index = remaining_parameters.find(f"{parameter}:")
-        if start_index >= 0:
-            end_index = remaining_parameters.find(",", start_index) + 2
-            if end_index < 0:
-                end_index = len(remaining_parameters)
-            remaining_parameters = (
-                remaining_parameters[:start_index] + remaining_parameters[end_index:]
-            )
-    return remaining_parameters.strip()
-
-
-def split_parameter(parameter):
-    if len(parameter) > 1024:
-        parts = parameter.split(",")
-        result_list = []
-        temp = ""
-
-        slice_num = len(parameter) / math.ceil(len(parameter) / 1024)
-        if slice_num * 1.1 >= 1024:
-            slice_num = 1024
-        else:
-            slice_num = slice_num * 1.1
-
-        for part in parts:
-            if len(temp) + len(part) <= slice_num:
-                temp += part + ","
-            else:
-                result_list.append(temp)
-                temp = part + ","
-        if temp:
-            result_list.append(temp)
-    else:
-        result_list = [parameter]
-
-    return result_list
 
 
 def load_guild_params(guild_id, param_id):
