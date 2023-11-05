@@ -40,6 +40,7 @@ async def infinite_magic_projection(self, message, payload=None, IMP_TRIGGER_REA
 
     if not vaild_attachment:
         await message.remove_reaction(IMP_TRIGGER_REACTION, reaction_member)
+        await message.add_reaction(os.getenv("IMP_REJECT_REACTION"))
 
 
 async def get_magic_data(self, magic_id, attachment, message):
@@ -260,7 +261,6 @@ async def send_DM(
                 ).format(message_url=embed_dict["url"])
             )
             await message.remove_reaction(os.getenv("IMP_TRIGGER_REACTION"), reaction_member)
-            await message.add_reaction(os.getenv("IMP_REJECT_REACTION"))
         else:
             self.log.exception("發生了一個 HTTP 例外：", exception_occurred)
     self.log.info(f"Cielifra 成功將魔法 {magic_id} 的咒文私訊給 {reaction_member.name}了。")
