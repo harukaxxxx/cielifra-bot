@@ -101,6 +101,17 @@ class BaseEventsCog(BaseCog, name="基礎事件"):
 
 class IMPCog(BaseCog, name="咒文讀取"):
     @discord.Cog.listener()
+    async def on_message(self, message):
+        bot = self.bot
+
+        if message.author == bot.user:
+            return
+
+        if message.channel.type == discord.ChannelType.private and message.attachments:
+            # TODO process in DM channel
+            await infinite_magic_projection(self, message)
+
+    @discord.Cog.listener()
     async def on_raw_reaction_add(self, payload):
         bot = self.bot
         if payload.emoji.name == os.getenv("IMP_TRIGGER_REACTION"):
