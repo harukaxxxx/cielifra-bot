@@ -19,7 +19,8 @@ main functions for infinite magic projection
 """
 
 
-async def infinite_magic_projection(self, message, payload=None, IMP_TRIGGER_REACTION=None):
+async def infinite_magic_projection(self, message, payload=None):
+    bot = self.bot
     guild = message.guild if message.guild is not None else message.author.id
     channel = message.channel
     reaction_member = payload.member if payload is not None else message.author
@@ -29,6 +30,7 @@ async def infinite_magic_projection(self, message, payload=None, IMP_TRIGGER_REA
         magic_data = await get_magic_data(self, magic_id, attachment, message)
         if magic_data is not None:
             vaild_attachment = True
+            await message.add_reaction(bot.imp_reaction()["accept"])
             save_magic_data(magic_data)
             await send_DM(
                 self,
@@ -39,8 +41,9 @@ async def infinite_magic_projection(self, message, payload=None, IMP_TRIGGER_REA
             )
 
     if not vaild_attachment:
-        await message.remove_reaction(IMP_TRIGGER_REACTION, reaction_member)
-        await message.add_reaction(os.getenv("IMP_REJECT_REACTION"))
+        await message.remove_reaction(bot.imp_reaction()["trigger"], reaction_member)
+        await message.add_reaction(bot.imp_reaction()["reject"])
+
 
 
 async def get_magic_data(self, magic_id, attachment, message):
@@ -247,6 +250,7 @@ async def send_DM(
     magic_id,
     magic_data,
 ):
+    bot = self.bot
     embed_fields = build_embed_fields(magic_id, magic_data)
     embed_dict = build_embed_dict(magic_id, magic_data, embed_fields)
     magic_embed = discord.Embed.from_dict(embed_dict)
@@ -260,7 +264,7 @@ async def send_DM(
                     "無限魔法投影已超出負荷，Cielifra 的法力正在耗盡！\n請手動下載 PNG 使用 sd-webui 的 PNG info 功能獲取咒文。\n原始訊息的連結是：{message_url}"
                 ).format(message_url=embed_dict["url"])
             )
-            await message.remove_reaction(os.getenv("IMP_TRIGGER_REACTION"), reaction_member)
+            await message.remove_reaction(bot.imp_reaction()["trigger"], reaction_member)
         else:
             self.log.exception("發生了一個 HTTP 例外：", exception_occurred)
     self.log.info(f"Cielifra 成功將魔法 {magic_id} 的咒文私訊給 {reaction_member.name}了。")
