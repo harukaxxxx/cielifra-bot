@@ -72,7 +72,8 @@ class Bot(commands.Bot, metaclass=BotMeta):
         return self._uptime
 
     def imp_reaction(self):
-        return {"trigger": "ℹ️", "accept": "✨", "workflow": "🔧", "reject": "❎"}
+        trigger = "ℹ️" if not self.dev else "🔍"
+        return {"trigger": trigger, "accept": "✨", "workflow": "🔧", "reject": "❎"}
 
     async def get_or_fetch_user(self, user_id: Union[int, str]) -> discord.User:
         if (user := self.get_user(user_id := int(user_id))) is not None:

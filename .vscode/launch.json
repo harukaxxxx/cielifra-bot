@@ -2,7 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Bootup",
+      "name": "Bootup Dev",
+      "type": "python",
+      "request": "launch",
+      "module": "bot",
+      "justMyCode": true,
+      "args": ["-d"]
+    },
+    {
+      "name": "Bootup Prod",
       "type": "python",
       "request": "launch",
       "module": "bot",

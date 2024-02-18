@@ -46,6 +46,7 @@ class BaseEventsCog(BaseCog, name="基礎事件"):
         table_general_info.add_row("python version", platform.python_version())
         table_general_info.add_row("py-cord version", discord.__version__)
         table_general_info.add_row("bot version", bot.__version__)
+        table_general_info.add_row("dev mode", str(bot.dev))
 
         table_counts = Table(show_edge=False, show_header=False, box=MINIMAL)
 
