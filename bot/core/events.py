@@ -112,14 +112,6 @@ class IMPCog(BaseCog, name="咒文讀取"):
                 )
 
 
-class BookmarkCog(BaseCog, name="加入書籤"):
-    @discord.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        if payload.emoji.name == "🔖":
-            print("bookmark")
-
-
 def setup(bot: "Bot"):
     bot.add_cog(BaseEventsCog(bot))
     bot.add_cog(IMPCog(bot))
-    bot.add_cog(BookmarkCog(bot))
