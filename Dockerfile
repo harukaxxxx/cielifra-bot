@@ -5,6 +5,6 @@ RUN apk add --no-cache git zlib-dev jpeg-dev gcc musl-dev
 RUN git clone https://github.com/harukaxxxx/cielifra-bot.git /app
 
 WORKDIR /app
-RUN pip install --no-cache-dir -r /app/requirements/prod.txt
+RUN pip install --no-cache-dir -r requirements/prod.txt
 
-CMD ["python", "-m", "bot"]
+CMD ["/bin/bash"]
