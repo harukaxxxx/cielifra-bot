@@ -1,17 +1,10 @@
-FROM python:3.11.4-alpine as base
-FROM base as builder
+FROM python:3.11.4-alpine
 
-RUN apk add zlib-dev jpeg-dev gcc musl-dev
+RUN apk update
+RUN apk add --no-cache git zlib-dev jpeg-dev gcc musl-dev
+RUN git clone https://github.com/harukaxxxx/cielifra-bot.git /app
 
-COPY requirements/prod.txt /requirements.txt
-RUN pip install --user -r /requirements.txt
-
-FROM base
-WORKDIR /base
-
-COPY --from=builder /root/.local /root/.local
-COPY ./bot ./bot
-
-ENV PATH=/root/.local:$PATH
+WORKDIR /app
+RUN pip install --no-cache-dir -r /app/requirements/prod.txt
 
 CMD ["python", "-m", "bot"]
