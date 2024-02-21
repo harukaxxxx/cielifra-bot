@@ -1,15 +1,12 @@
-version: '1'
+version: '3'
 services:
   cielifra-bot:
     container_name: cielifra-bot
-    build:
-      context: .
-      dockerfile: Dockerfile
+    image: ghcr.io/harukaxxxx/cielifra-bot:latest
     environment:
       - DISCORD_TOKEN=
       - OWNER_IDS=
-      - IMP_TRIGGER_REACTION=ℹ️
-      - IMP_REJECT_REACTION=❎
     volumes:
-      - /volume1/docker/cielifra-bot:/base
+      - ./logs:/app/logs
+    command: python -m bot
     restart: unless-stopped
