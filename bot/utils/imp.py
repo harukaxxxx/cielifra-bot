@@ -45,7 +45,6 @@ async def infinite_magic_projection(self, message, payload=None):
         await message.add_reaction(bot.imp_reaction()["reject"])
 
 
-
 async def get_magic_data(self, magic_id, attachment, message):
     # find exists magic data
     try:
@@ -69,7 +68,9 @@ async def get_magic_data(self, magic_id, attachment, message):
         img = Image.open(image_data)
         if "parameters" in img.info:
             parameter_info = img.info["parameters"]
-            self.log.info(f"Cielifra 在魔法手帳目錄找不到魔法 {magic_id}，正在努力施展無限魔法投影解析魔法中…")
+            self.log.info(
+                f"Cielifra 在魔法手帳目錄找不到魔法 {magic_id}，正在努力施展無限魔法投影解析魔法中…"
+            )
             magic_data = await build_magic_data(magic_id, parameter_info, message, attachment)
             # vaild_attachment = True
             return magic_data
@@ -233,13 +234,18 @@ def get_magic_data_footer(message):
 
 
 def save_magic_data(magic_data):
-    with open("logs/magics.json", "r", encoding="utf-8") as file:
+    file_path = "logs/magics.json"
+
+    if not os.path.exists(file_path):
+        with open(file_path, "w", encoding="utf-8") as file:
+            json.dump({}, file)
+    with open(file_path, "r", encoding="utf-8") as file:
         existing_magic_data = json.load(file)
 
     for magic_data_id, data in magic_data.items():
         existing_magic_data[magic_data_id] = data
 
-    with open("logs/magics.json", "w", encoding="utf-8") as file:
+    with open(file_path, "w", encoding="utf-8") as file:
         json.dump(existing_magic_data, file, ensure_ascii=False, indent=2)
 
 
