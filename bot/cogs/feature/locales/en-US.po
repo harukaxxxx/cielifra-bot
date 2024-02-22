@@ -1,0 +1,33 @@
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: FULL NAME <EMAIL@ADDRESS>\n"
+"POT-Creation-Date: 2024-02-22 21:17+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: en-US\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: dpy-template 1.0.0\n"
+
+#: bot\cogs\feature\bookmark.py:34
+msgid "書籤"
+msgstr ""
+
+#: bot\cogs\feature\imp.py:264
+#, python-format
+msgid ""
+"無限魔法投影已超出負荷，Cielifra 的法力正在耗盡！\n"
+"請手動下載 PNG 使用 sd-webui 的 PNG info 功能獲取咒文。\n"
+"原始訊息的連結是：{message_url}"
+msgstr ""
+"Infinite Magic Projection has exceeded its capacity, and Cielifra is running out of mana!\n"
+"Please download the PNG manually and place it in the sd-webui PNG INFO tab to obtain the parameters.\n"
+"The original link to the message is:{message_link}"
+
+#: bot\cogs\feature\imp.py:500
+msgid "咒文讀取"
+msgstr ""

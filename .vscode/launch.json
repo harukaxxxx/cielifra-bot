@@ -7,7 +7,7 @@
       "request": "launch",
       "module": "bot",
       "justMyCode": true,
-      "args": ["-d"]
+      "args": ["-d", "--level", "DEBUG"]
     },
     {
       "name": "Bootup Prod",

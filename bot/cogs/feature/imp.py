@@ -36,6 +36,7 @@ async def infinite_magic_projection(self, message, payload=None):
     if not valid_attachment:
         await message.remove_reaction(bot.imp_reaction()["trigger"], reaction_member)
         await message.add_reaction(bot.imp_reaction()["reject"])
+        self.log.debug("IMPCog : Attachment invalid, rejected.")
 
 
 async def get_magic_data(self, magic_id, attachment, message):
@@ -52,7 +53,7 @@ async def get_magic_data(self, magic_id, attachment, message):
     if magic_id in magic_dict:
         self.log.info(f"Cielifra 在魔法手帳目錄找到魔法 {magic_id}，正在努力翻找手帳…")
         magic_data = {magic_id: magic_dict[magic_id]}
-        # vaild_attachment = True
+        self.log.debug(f"imp : magic data is {json.dumps(magic_data, indent=2)}")
         return magic_data
     elif attachment.filename.endswith(".png"):
         # check attachment is png which have parameters
@@ -65,8 +66,10 @@ async def get_magic_data(self, magic_id, attachment, message):
                 f"Cielifra 在魔法手帳目錄找不到魔法 {magic_id}，正在努力施展無限魔法投影解析魔法中…"
             )
             magic_data = await build_magic_data(magic_id, parameter_info, message, attachment)
-            # vaild_attachment = True
+            self.log.debug(f"imp : magic data is {json.dumps(magic_data, indent=2)}")
             return magic_data
+        else:
+            self.log.debug("imp : Parameters info not found in image.")
 
 
 async def build_magic_data(magic_id, parameter_info, message, attachment):
@@ -509,6 +512,9 @@ class IMPCog(BaseCog, name="咒文讀取"):
                 await infinite_magic_projection(self, message, payload)
             else:
                 await message.remove_reaction(bot.imp_reaction()["trigger"], reaction_member)
+                self.log.debug(
+                    "IMPCog : Message doesn't have attachments, removed trigger reaction."
+                )
 
 
 def setup(bot: "Bot"):
