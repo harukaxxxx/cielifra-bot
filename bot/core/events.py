@@ -1,4 +1,3 @@
-import os
 import platform
 from datetime import datetime
 
@@ -10,7 +9,7 @@ from rich.columns import Columns
 from rich.panel import Panel
 from rich.table import Table
 
-from bot import ApplicationContext, BaseCog, Bot, Translator, infinite_magic_projection
+from bot import ApplicationContext, BaseCog, Bot, Translator
 
 _ = Translator(__name__)
 
@@ -100,17 +99,5 @@ class BaseEventsCog(BaseCog, name="基礎事件"):
         self.log.exception(type(error).__name__, exc_info=error)
 
 
-class IMPCog(BaseCog, name="咒文讀取"):
-    @discord.Cog.listener()
-    async def on_raw_reaction_add(self, payload):
-        bot = self.bot
-        if payload.emoji.name == bot.imp_reaction()["trigger"]:
-            channel = await bot.get_or_fetch_channel(payload.channel_id)
-            message = await channel.fetch_message(int(payload.message_id))
-            if message.attachments:
-                await infinite_magic_projection(self, message, payload)
-
-
 def setup(bot: "Bot"):
     bot.add_cog(BaseEventsCog(bot))
-    bot.add_cog(IMPCog(bot))

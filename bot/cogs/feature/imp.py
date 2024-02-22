@@ -4,19 +4,12 @@ import math
 import io
 import os
 import json
-import discord
-
 from datetime import datetime, timezone
+import discord
 from PIL import Image
-from bot import Translator
-
-__all__ = ["infinite_magic_projection"]
+from bot import BaseCog, Bot, Translator, cog_i18n
 
 _ = Translator(__name__)
-
-"""
-main functions for infinite magic projection
-"""
 
 
 async def infinite_magic_projection(self, message, payload=None):
@@ -24,12 +17,12 @@ async def infinite_magic_projection(self, message, payload=None):
     guild = message.guild if message.guild is not None else message.author.id
     channel = message.channel
     reaction_member = payload.member if payload is not None else message.author
-    vaild_attachment = False
+    valid_attachment = False
     for attachment in message.attachments:
         magic_id = f"{guild.id}-{channel.id}-{attachment.id}"
         magic_data = await get_magic_data(self, magic_id, attachment, message)
         if magic_data is not None:
-            vaild_attachment = True
+            valid_attachment = True
             await message.add_reaction(bot.imp_reaction()["accept"])
             save_magic_data(magic_data)
             await send_DM(
@@ -40,7 +33,7 @@ async def infinite_magic_projection(self, message, payload=None):
                 magic_data,
             )
 
-    if not vaild_attachment:
+    if not valid_attachment:
         await message.remove_reaction(bot.imp_reaction()["trigger"], reaction_member)
         await message.add_reaction(bot.imp_reaction()["reject"])
 
@@ -500,3 +493,23 @@ def split_parameter(parameter):
         result_list = [parameter]
 
     return result_list
+
+
+@cog_i18n
+class IMPCog(BaseCog, name="咒文讀取"):
+    @discord.Cog.listener()
+    async def on_raw_reaction_add(self, payload):
+        bot = self.bot
+        if payload.emoji.name == bot.imp_reaction()["trigger"]:
+            channel = await bot.get_or_fetch_channel(payload.channel_id)
+            message = await channel.fetch_message(int(payload.message_id))
+            reaction_member = payload.member if payload is not None else message.author
+
+            if message.attachments:
+                await infinite_magic_projection(self, message, payload)
+            else:
+                await message.remove_reaction(bot.imp_reaction()["trigger"], reaction_member)
+
+
+def setup(bot: "Bot"):
+    bot.add_cog(IMPCog(bot))
