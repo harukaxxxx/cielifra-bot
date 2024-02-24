@@ -65,7 +65,7 @@ async def get_magic_data(self, magic_id, attachment, message):
             self.log.info(
                 f"Cielifra 在魔法手帳目錄找不到魔法 {magic_id}，正在努力施展無限魔法投影解析魔法中…"
             )
-            magic_data = await build_magic_data(magic_id, parameter_info, message, attachment)
+            magic_data = await build_magic_data(self, magic_id, parameter_info, message, attachment)
             return magic_data
         elif "Software" in img.info and img.info["Software"] == "NovelAI":
             self.log.info(
@@ -73,14 +73,16 @@ async def get_magic_data(self, magic_id, attachment, message):
             )
             parameter_info = json.loads(img.info["Comment"])
             magic_data = await build_novelai_magic_data(
-                magic_id, parameter_info, message, attachment
+                self, magic_id, parameter_info, message, attachment
             )
             return magic_data
         else:
             self.log.debug("imp : Parameters info not found in image.")
 
 
-async def build_magic_data(magic_id, parameter_info, message, attachment):
+async def build_magic_data(self, magic_id, parameter_info, message, attachment):
+    self.log.debug("IMP Cog : Building magic data.")
+
     title = f"『{generate_spell(magic_id)}』"
     prompts, nprompts = get_magic_data_prompts(parameter_info)
     parameters, extra_info = get_magic_data_parameters(parameter_info)
@@ -105,7 +107,9 @@ async def build_magic_data(magic_id, parameter_info, message, attachment):
     return magic_data
 
 
-async def build_novelai_magic_data(magic_id, parameter_info, message, attachment):
+async def build_novelai_magic_data(self, magic_id, parameter_info, message, attachment):
+    self.log.debug("IMP Cog : Building magic data.")
+
     title = f"『{generate_spell(magic_id)}』"
     parameters, extra_info = get_novelai_magic_data_parameters(parameter_info)
     timestamp = datetime.now(timezone.utc).isoformat()
@@ -207,37 +211,59 @@ def get_magic_data_prompts(parameter_info):
 
 def get_magic_data_parameters(parameter_info: str):
     steps_index = parameter_info.find("Steps: ")
-    extras = parameter_info[steps_index - 1 : len(parameter_info)]
+    parameter_string = parameter_info[steps_index - 1 : len(parameter_info)]
+
+    # create parameter dict from string
+    parameter_pairs = parameter_string.split(',')
+    merge_book = []
+    for k, pair in enumerate(parameter_pairs):
+        if '"' in pair and pair.count('"') == 1:
+            merge_book.append(k)
+    merged_parameters = merge_parameters(parameter_pairs, merge_book)
+    parameter_dict = create_dict_from_parameter_pairs(merged_parameters)
+
     parameters = {
-        "Steps": None,
-        "CFG scale": None,
-        "Seed": None,
-        "Sampler": None,
-        "Model": None,
-        "Model hash": None,
-        "VAE": None,
-        "VAE hash": None,
-        "Size": None,
-        "Clip skip": None,
-        "Version": None,
+        "Steps": parameter_dict["Steps"],
+        "CFG scale": parameter_dict["CFG scale"],
+        "Seed": parameter_dict["Seed"],
+        "Sampler": parameter_dict["Sampler"],
+        "Model": f"{parameter_dict['Model']} [{parameter_dict['Model hash']}]",
+        "VAE": f"{parameter_dict['VAE']} [{parameter_dict['VAE hash']}]",
+        "Size": parameter_dict["Size"],
+        "Version": parameter_dict["Version"],
     }
 
-    if parse_parameter(extras, "Hires upscale: ") != "-":
-        parameters.update(
-            {
-                "Hires upscale": None,
-                "Hires steps": None,
-                "Hires upscaler": None,
-                "Denoising strength": None,
-            }
-        )
-    if parse_parameter(extras, "Lora hashes: ") != "-":
-        parameters.update({"Lora hashes": None})
+    if "Hires upscale" in parameter_dict:
+        hires_parameters = ["Hires upscale", "Hires steps", "Hires upscaler", "Denoising strength"]
+        for lora_hashes in hires_parameters:
+            if lora_hashes in parameter_dict:
+                parameters.update({lora_hashes: parameter_dict[lora_hashes]})
+            else:
+                parameters.update({lora_hashes: "-"})
 
-    for parameter in parameters:
-        parameters[parameter] = parse_parameter(extras, f"{parameter}: ")
-    extra_info = get_remaining_parameters(parameters, extras)
-    return parameters, extra_info
+    # add extra hashes
+    extra_hashes = ["Lora hashes", "Lyco hashes", "TI hashes"]
+    for hashes in extra_hashes:
+        if hashes in parameter_dict:
+            lora_hashes_string = parameter_dict[hashes].replace('"', "")
+            lora_hashes_dict = create_dict_from_parameter_pairs(lora_hashes_string.split(','))
+            lora_hashes = ""
+            for k, v in lora_hashes_dict.items():
+                lora_hashes += f"{k} [{v}]\n"
+            parameters.update({hashes: lora_hashes})
+
+    # collecting extra_parameters
+    extra_parameters_dict = {
+        key: value for key, value in parameter_dict.items() if key not in parameters
+    }
+    extra_parameters_dict.pop("Model hash")
+    extra_parameters_dict.pop("VAE hash")
+
+    extra_parameters = ", ".join(
+        [f"{key}: {value}" for key, value in extra_parameters_dict.items()]
+    )
+
+    return parameters, extra_parameters
 
 
 def get_novelai_magic_data_parameters(parameter_info: str):
@@ -368,7 +394,7 @@ def build_embed_fields(magic_id, magic_data):
         # add title
         if parameter == "Hires upscale":
             parameter_field.append({"name": "Hires info", "value": ""})
-        if parameter == "Lora hashes":
+        if "hashes" in parameter:
             inline = False
 
         parameter_dict = {
@@ -421,42 +447,31 @@ def build_embed_dict(magic_id, magic_data, embed_fields):
     return embed_dict
 
 
-def parse_parameter(parameters: str, scope: str):
-    """
-    Parses parameters to find and return the value of a specific scope.
-
-    Parameters:
-    -----------
-    parameters :class:`str`: The string containing all parameters.
-    scope :class:`str`: The specific scope to find in the parameters string.
-
-    Returns:
-    --------
-    :class:`str`: The value of the specified scope in the parameters string.
-    If the scope is not found, returns '-'.
-    """
-    start_index = parameters.find(scope)
-    if start_index > 0:
-        parameter_length = parameters[start_index : len(parameters)].find(",")
-        if parameter_length < 0:
-            parameter_length = len(parameters)
-        return parameters[start_index + len(scope) : start_index + parameter_length]
-    else:
-        return "-"
+def merge_parameters(parameter_string_pairs, merge_book):
+    merged_parameters = []
+    skip_until = -1
+    for k, pair in enumerate(parameter_string_pairs):
+        if k < skip_until:
+            continue
+        if k in merge_book:
+            # Find the end index from merge_book
+            end_index = merge_book[merge_book.index(k) + 1]
+            # Concatenate the strings from start to end index
+            merged_pair = ','.join(parameter_string_pairs[k : end_index + 1])
+            merged_parameters.append(merged_pair)
+            skip_until = end_index + 1
+        else:
+            merged_parameters.append(pair)
+    return merged_parameters
 
 
-def get_remaining_parameters(parameters, extras):
-    remaining_parameters = extras
-    for parameter in parameters.keys():
-        start_index = remaining_parameters.find(f"{parameter}:")
-        if start_index >= 0:
-            end_index = remaining_parameters.find(",", start_index) + 2
-            if end_index < 0:
-                end_index = len(remaining_parameters)
-            remaining_parameters = (
-                remaining_parameters[:start_index] + remaining_parameters[end_index:]
-            )
-    return remaining_parameters.strip()
+def create_dict_from_parameter_pairs(merged_parameters):
+    parameters_dict = {}
+    for param in merged_parameters:
+        if ':' in param:
+            key, value = param.split(':', 1)  # Split only on the first colon
+            parameters_dict[key.strip()] = value.strip()
+    return parameters_dict
 
 
 def split_parameter(parameter):
