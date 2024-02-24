@@ -36,7 +36,7 @@ async def infinite_magic_projection(self, message, payload=None):
     if not valid_attachment:
         await message.remove_reaction(bot.imp_reaction()["trigger"], reaction_member)
         await message.add_reaction(bot.imp_reaction()["reject"])
-        self.log.debug("IMPCog : Attachment invalid, rejected.")
+        self.log.debug("IMP Cog : Attachment invalid, rejected.")
 
 
 async def get_magic_data(self, magic_id, attachment, message):
@@ -53,12 +53,12 @@ async def get_magic_data(self, magic_id, attachment, message):
     if magic_id in magic_dict:
         self.log.info(f"Cielifra 在魔法手帳目錄找到魔法 {magic_id}，正在努力翻找手帳…")
         magic_data = {magic_id: magic_dict[magic_id]}
-        self.log.debug(f"imp : magic data is {json.dumps(magic_data, indent=2)}")
         return magic_data
     elif attachment.filename.endswith(".png"):
         # check attachment is png which have parameters
-
+        self.log.debug(f"IMP Cog : Reading attachment...\n(\"{attachment}\")")
         image_data = io.BytesIO(await attachment.read())
+        self.log.debug("IMP Cog : Opening attachment...")
         img = Image.open(image_data)
         if "parameters" in img.info:
             parameter_info = img.info["parameters"]
@@ -69,7 +69,7 @@ async def get_magic_data(self, magic_id, attachment, message):
             self.log.debug(f"imp : magic data is {json.dumps(magic_data, indent=2)}")
             return magic_data
         else:
-            self.log.debug("imp : Parameters info not found in image.")
+            self.log.debug("IMP Cog : Parameters info not found in image.")
 
 
 async def build_magic_data(magic_id, parameter_info, message, attachment):
@@ -235,6 +235,7 @@ def save_magic_data(magic_data):
     if not os.path.exists(file_path):
         with open(file_path, "w", encoding="utf-8") as file:
             json.dump({}, file)
+
     with open(file_path, "r", encoding="utf-8") as file:
         existing_magic_data = json.load(file)
 
@@ -513,7 +514,7 @@ class IMPCog(BaseCog, name="咒文讀取"):
             else:
                 await message.remove_reaction(bot.imp_reaction()["trigger"], reaction_member)
                 self.log.debug(
-                    "IMPCog : Message doesn't have attachments, removed trigger reaction."
+                    "IMP Cog : Message doesn't have attachments, removed trigger reaction."
                 )
 
 
