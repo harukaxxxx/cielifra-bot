@@ -65,14 +65,24 @@ async def get_magic_data(self, magic_id, attachment, message):
             self.log.info(
                 f"Cielifra 在魔法手帳目錄找不到魔法 {magic_id}，正在努力施展無限魔法投影解析魔法中…"
             )
-            magic_data = await build_magic_data(magic_id, parameter_info, message, attachment)
-            self.log.debug(f"imp : magic data is {json.dumps(magic_data, indent=2)}")
+            magic_data = await build_magic_data(self, magic_id, parameter_info, message, attachment)
+            return magic_data
+        elif "Software" in img.info and img.info["Software"] == "NovelAI":
+            self.log.info(
+                f"Cielifra 在魔法手帳目錄找不到魔法 {magic_id}，正在努力施展無限魔法投影解析魔法中…"
+            )
+            parameter_info = json.loads(img.info["Comment"])
+            magic_data = await build_novelai_magic_data(
+                self, magic_id, parameter_info, message, attachment
+            )
             return magic_data
         else:
             self.log.debug("IMP Cog : Parameters info not found in image.")
 
 
-async def build_magic_data(magic_id, parameter_info, message, attachment):
+async def build_magic_data(self, magic_id, parameter_info, message, attachment):
+    self.log.debug("IMP Cog : Building magic data.")
+
     title = f"『{generate_spell(magic_id)}』"
     prompts, nprompts = get_magic_data_prompts(parameter_info)
     parameters, extra_info = get_magic_data_parameters(parameter_info)
@@ -85,6 +95,32 @@ async def build_magic_data(magic_id, parameter_info, message, attachment):
             "title": title,
             "prompt": prompts,
             "nprompt": nprompts,
+            "parameters": parameters,
+            "extra_info": extra_info,
+            "timestamp": timestamp,
+            "image_url": attachment.url,
+            "author": {"name": author_name, "icon_url": author_avatar_url},
+            "footer": {"text": footer_text, "icon_url": guild_icon_url},
+            "message_url": message.jump_url,
+        }
+    }
+    return magic_data
+
+
+async def build_novelai_magic_data(self, magic_id, parameter_info, message, attachment):
+    self.log.debug("IMP Cog : Building magic data.")
+
+    title = f"『{generate_spell(magic_id)}』"
+    parameters, extra_info = get_novelai_magic_data_parameters(parameter_info)
+    timestamp = datetime.now(timezone.utc).isoformat()
+    author_name, author_avatar_url = await get_magic_data_author(message)
+    footer_text, guild_icon_url = get_magic_data_footer(message)
+
+    magic_data = {
+        magic_id: {
+            "title": title,
+            "prompt": parameter_info["prompt"],
+            "nprompt": parameter_info["uc"],
             "parameters": parameters,
             "extra_info": extra_info,
             "timestamp": timestamp,
@@ -175,28 +211,78 @@ def get_magic_data_prompts(parameter_info):
 
 def get_magic_data_parameters(parameter_info: str):
     steps_index = parameter_info.find("Steps: ")
-    extras = parameter_info[steps_index - 1 : len(parameter_info)]
+    parameter_string = parameter_info[steps_index - 1 : len(parameter_info)]
+
+    # create parameter dict from string
+    parameter_pairs = parameter_string.split(',')
+    merge_book = []
+    for k, pair in enumerate(parameter_pairs):
+        if '"' in pair and pair.count('"') == 1:
+            merge_book.append(k)
+    merged_parameters = merge_parameters(parameter_pairs, merge_book)
+    parameter_dict = create_dict_from_parameter_pairs(merged_parameters)
+
     parameters = {
-        "Steps": None,
-        "CFG scale": None,
-        "Seed": None,
-        "Sampler": None,
-        "Model": None,
-        "Model hash": None,
-        "VAE": None,
-        "VAE hash": None,
-        "Clip skip": None,
-        "Size": None,
-        "Version": None,
-        "Hires upscale": None,
-        "Hires steps": None,
-        "Hires upscaler": None,
-        "Denoising strength": None,
-        "Lora hashes": None,
+        "Steps": parameter_dict["Steps"],
+        "CFG scale": parameter_dict["CFG scale"],
+        "Seed": parameter_dict["Seed"],
+        "Sampler": parameter_dict["Sampler"],
+        "Model": f"{parameter_dict['Model']} [{parameter_dict['Model hash']}]",
+        "VAE": f"{parameter_dict['VAE']} [{parameter_dict['VAE hash']}]",
+        "Size": parameter_dict["Size"],
+        "Version": parameter_dict["Version"],
     }
-    for parameter in parameters:
-        parameters[parameter] = parse_parameter(extras, f"{parameter}: ")
-    extra_info = get_remaining_parameters(parameters, extras)
+
+    if "Hires upscale" in parameter_dict:
+        hires_parameters = ["Hires upscale", "Hires steps", "Hires upscaler", "Denoising strength"]
+        for lora_hashes in hires_parameters:
+            if lora_hashes in parameter_dict:
+                parameters.update({lora_hashes: parameter_dict[lora_hashes]})
+            else:
+                parameters.update({lora_hashes: "-"})
+
+    # add extra hashes
+    extra_hashes = ["Lora hashes", "Lyco hashes", "TI hashes"]
+    for hashes in extra_hashes:
+        if hashes in parameter_dict:
+            lora_hashes_string = parameter_dict[hashes].replace('"', "")
+            lora_hashes_dict = create_dict_from_parameter_pairs(lora_hashes_string.split(','))
+            lora_hashes = ""
+            for k, v in lora_hashes_dict.items():
+                lora_hashes += f"{k} [{v}]\n"
+            parameters.update({hashes: lora_hashes})
+
+    # collecting extra_parameters
+    extra_parameters_dict = {
+        key: value for key, value in parameter_dict.items() if key not in parameters
+    }
+    extra_parameters_dict.pop("Model hash")
+    extra_parameters_dict.pop("VAE hash")
+
+    extra_parameters = ", ".join(
+        [f"{key}: {value}" for key, value in extra_parameters_dict.items()]
+    )
+
+    return parameters, extra_parameters
+
+
+def get_novelai_magic_data_parameters(parameter_info: str):
+    parameters = {
+        "Steps": str(parameter_info["steps"]),
+        "CFG scale": str(parameter_info["scale"]),
+        "Seed": str(parameter_info["seed"]),
+        "Sampler": parameter_info["sampler"],
+        "Model": "NovelAI",
+        "Size": f"{parameter_info['height']}x{parameter_info['width']}",
+    }
+
+    used_parameters = ["prompt", "uc", "steps", "scale", "seed", "sampler", "height", "width"]
+
+    extra_info = ""
+    for key, value in parameter_info.items():
+        if key not in used_parameters:
+            extra_info += f"{key}: {value}, "
+
     return parameters, extra_info
 
 
@@ -303,97 +389,24 @@ def build_embed_fields(magic_id, magic_data):
     embed_fields.extend(nprompt_fields)
 
     # add parameter fields
-    parameter_field = [
-        {"name": "Parameters", "value": ""},
-        {
-            "name": "Steps",
-            "value": magic_data[magic_id]["parameters"]["Steps"],
-            "inline": True,
-        },
-        {
-            "name": "CFG scale",
-            "value": magic_data[magic_id]["parameters"]["CFG scale"],
-            "inline": True,
-        },
-        {
-            "name": "Seed",
-            "value": magic_data[magic_id]["parameters"]["Seed"],
-            "inline": True,
-        },
-        {
-            "name": "Sampler",
-            "value": magic_data[magic_id]["parameters"]["Sampler"],
-            "inline": True,
-        },
-        {
-            "name": "Model",
-            "value": magic_data[magic_id]["parameters"]["Model"],
-            "inline": True,
-        },
-        {
-            "name": "Model hash",
-            "value": magic_data[magic_id]["parameters"]["Model hash"],
-            "inline": True,
-        },
-        {
-            "name": "VAE",
-            "value": magic_data[magic_id]["parameters"]["VAE"],
-            "inline": True,
-        },
-        {
-            "name": "VAE hash",
-            "value": magic_data[magic_id]["parameters"]["VAE hash"],
-            "inline": True,
-        },
-        {
-            "name": "Size",
-            "value": magic_data[magic_id]["parameters"]["Size"],
-            "inline": True,
-        },
-        {
-            "name": "Version",
-            "value": magic_data[magic_id]["parameters"]["Version"],
-            "inline": True,
-        },
-    ]
+    parameter_field = [{"name": "Parameters", "value": ""}]
+    inline = True
+    for parameter, value in magic_data[magic_id]["parameters"].items():
+        # add title
+        if parameter == "Hires upscale":
+            parameter_field.append({"name": "Hires info", "value": ""})
+        if "hashes" in parameter:
+            inline = False
+
+        parameter_dict = {
+            "name": parameter,
+            "value": value,
+            "inline": inline,
+        }
+
+        parameter_field.append(parameter_dict)
+
     embed_fields.extend(parameter_field)
-
-    # add hires fields if exists
-    if magic_data[magic_id]["parameters"]["Hires upscale"] != "-":
-        hires_fields = [
-            {"name": "Hires info", "value": ""},
-            {
-                "name": "Hires upscale",
-                "value": magic_data[magic_id]["parameters"]["Hires upscale"],
-                "inline": True,
-            },
-            {
-                "name": "Hires steps",
-                "value": magic_data[magic_id]["parameters"]["Hires steps"],
-                "inline": True,
-            },
-            {
-                "name": "Hires upscaler",
-                "value": magic_data[magic_id]["parameters"]["Hires upscaler"],
-                "inline": True,
-            },
-            {
-                "name": "Denoising strength",
-                "value": magic_data[magic_id]["parameters"]["Denoising strength"],
-                "inline": True,
-            },
-        ]
-        embed_fields.extend(hires_fields)
-
-    # add lora hashes field
-    if magic_data[magic_id]["parameters"]["Lora hashes"] != "-":
-        lora_hashes_fields = [
-            {
-                "name": "Lora hashes",
-                "value": magic_data[magic_id]["parameters"]["Lora hashes"],
-            },
-        ]
-        embed_fields.extend(lora_hashes_fields)
 
     # separate extra info under 1024
     extra_info_list = split_parameter(magic_data[magic_id]["extra_info"])
@@ -435,42 +448,31 @@ def build_embed_dict(magic_id, magic_data, embed_fields):
     return embed_dict
 
 
-def parse_parameter(parameters: str, scope: str):
-    """
-    Parses parameters to find and return the value of a specific scope.
-
-    Parameters:
-    -----------
-    parameters :class:`str`: The string containing all parameters.
-    scope :class:`str`: The specific scope to find in the parameters string.
-
-    Returns:
-    --------
-    :class:`str`: The value of the specified scope in the parameters string.
-    If the scope is not found, returns '-'.
-    """
-    start_index = parameters.find(scope)
-    if start_index > 0:
-        parameter_length = parameters[start_index : len(parameters)].find(",")
-        if parameter_length < 0:
-            parameter_length = len(parameters)
-        return parameters[start_index + len(scope) : start_index + parameter_length]
-    else:
-        return "-"
+def merge_parameters(parameter_string_pairs, merge_book):
+    merged_parameters = []
+    skip_until = -1
+    for k, pair in enumerate(parameter_string_pairs):
+        if k < skip_until:
+            continue
+        if k in merge_book:
+            # Find the end index from merge_book
+            end_index = merge_book[merge_book.index(k) + 1]
+            # Concatenate the strings from start to end index
+            merged_pair = ','.join(parameter_string_pairs[k : end_index + 1])
+            merged_parameters.append(merged_pair)
+            skip_until = end_index + 1
+        else:
+            merged_parameters.append(pair)
+    return merged_parameters
 
 
-def get_remaining_parameters(parameters, extras):
-    remaining_parameters = extras
-    for parameter in parameters.keys():
-        start_index = remaining_parameters.find(f"{parameter}:")
-        if start_index >= 0:
-            end_index = remaining_parameters.find(",", start_index) + 2
-            if end_index < 0:
-                end_index = len(remaining_parameters)
-            remaining_parameters = (
-                remaining_parameters[:start_index] + remaining_parameters[end_index:]
-            )
-    return remaining_parameters.strip()
+def create_dict_from_parameter_pairs(merged_parameters):
+    parameters_dict = {}
+    for param in merged_parameters:
+        if ':' in param:
+            key, value = param.split(':', 1)  # Split only on the first colon
+            parameters_dict[key.strip()] = value.strip()
+    return parameters_dict
 
 
 def split_parameter(parameter):
