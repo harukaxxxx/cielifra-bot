@@ -222,15 +222,21 @@ def get_magic_data_parameters(parameter_info: str):
     merged_parameters = merge_parameters(parameter_pairs, merge_book)
     parameter_dict = create_dict_from_parameter_pairs(merged_parameters)
 
+    parameter_model_hash = (
+        f" [{parameter_dict.get('Model hash')}]" if 'Model hash' in parameter_dict else ''
+    )
+    parameter_vae_hash = (
+        f" [{parameter_dict.get('VAE hash')}]" if 'VAE hash' in parameter_dict else ''
+    )
     parameters = {
-        "Steps": parameter_dict["Steps"],
-        "CFG scale": parameter_dict["CFG scale"],
-        "Seed": parameter_dict["Seed"],
-        "Sampler": parameter_dict["Sampler"],
-        "Model": f"{parameter_dict['Model']} [{parameter_dict['Model hash']}]",
-        "VAE": f"{parameter_dict['VAE']} [{parameter_dict['VAE hash']}]",
-        "Size": parameter_dict["Size"],
-        "Version": parameter_dict["Version"],
+        "Steps": parameter_dict.get('Steps', '-'),
+        "CFG scale": parameter_dict.get('CFG scale', '-'),
+        "Seed": parameter_dict.get('Seed', '-'),
+        "Sampler": parameter_dict.get('Sampler', '-'),
+        "Model": f"{parameter_dict.get('Model', '-')}{parameter_model_hash}",
+        "VAE": f"{parameter_dict.get('VAE', '-')}{parameter_vae_hash}",
+        "Size": parameter_dict.get('Size', '-'),
+        "Version": parameter_dict.get('Version', '-'),
     }
 
     if "Hires upscale" in parameter_dict:
@@ -256,8 +262,10 @@ def get_magic_data_parameters(parameter_info: str):
     extra_parameters_dict = {
         key: value for key, value in parameter_dict.items() if key not in parameters
     }
-    extra_parameters_dict.pop("Model hash")
-    extra_parameters_dict.pop("VAE hash")
+    if "Model hash" in extra_parameters_dict:
+        extra_parameters_dict.pop("Model hash")
+    if "VAE hash" in extra_parameters_dict:
+        extra_parameters_dict.pop("VAE hash")
 
     extra_parameters = ", ".join(
         [f"{key}: {value}" for key, value in extra_parameters_dict.items()]
