@@ -9,7 +9,7 @@ _ = Translator(__name__)
 
 
 @cog_i18n
-class InfoCog(BaseCog, name="雜項"):
+class InfoCog(BaseCog, name="雜項", description=""):
     @discord.slash_command(
         guild_only=True,
         i18n_name=_("上線時間"),
@@ -25,7 +25,9 @@ class InfoCog(BaseCog, name="雜項"):
 
         embed = Embed(
             title=ctx._("機器人上線時間"),
-            description=ctx._("{days:02d}天 {hours:02d}小時 {minutes:02d}分鐘 {seconds:02d}秒").format(
+            description=ctx._(
+                "{days:02d}天 {hours:02d}小時 {minutes:02d}分鐘 {seconds:02d}秒"
+            ).format(
                 days=days,
                 hours=hours,
                 minutes=minutes,
@@ -37,8 +39,8 @@ class InfoCog(BaseCog, name="雜項"):
 
     @discord.slash_command(
         guild_only=False,
-        i18n_name="邀請連結",
-        i18n_description="生成機器人邀請連結",
+        i18n_name=_("邀請連結"),
+        i18n_description=_("生成邀請連結"),
     )
     async def invite(self, ctx: ApplicationContext):
         bot = self.bot
@@ -46,7 +48,8 @@ class InfoCog(BaseCog, name="雜項"):
             client_id=bot.application_id,
             permissions=discord.Permissions(permissions=2419452944),
         )
-        await ctx.respond(f"機器人邀請連結：{invite_url}")
+        invite_message = ctx._("邀請連結：{url}").format(url=invite_url)
+        await ctx.respond(invite_message)
 
 
 def setup(bot: "Bot"):
