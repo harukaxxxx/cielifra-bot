@@ -3,7 +3,7 @@
   "configurations": [
     {
       "name": "Bootup Dev",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "bot",
       "justMyCode": true,
@@ -11,9 +11,17 @@
     },
     {
       "name": "Bootup Prod",
-      "type": "python",
+      "type": "debugpy",
       "request": "launch",
       "module": "bot",
+      "justMyCode": true
+    },
+    {
+      "name": "Multilang Gen",
+      "type": "debugpy",
+      "request": "launch",
+      "module": "bot",
+      "args": ["-s", "-l", "en-US", "-f", "bot", "-r"],
       "justMyCode": true
     }
   ]

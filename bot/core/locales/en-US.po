@@ -15,7 +15,7 @@ msgstr ""
 
 #: bot\core\commands.py:117 bot\core\help.py:82
 msgid "指令"
-msgstr ""
+msgstr "help"
 
 #: bot\core\commands.py:118
 msgid "要查詢的指令"

@@ -17,7 +17,7 @@ msgstr ""
 msgid "書籤"
 msgstr ""
 
-#: bot\cogs\feature\imp.py:264
+#: bot\cogs\feature\imp.py:361
 #, python-format
 msgid ""
 "無限魔法投影已超出負荷，Cielifra 的法力正在耗盡！\n"
@@ -28,6 +28,6 @@ msgstr ""
 "Please download the PNG manually and place it in the sd-webui PNG INFO tab to obtain the parameters.\n"
 "The original link to the message is:{message_link}"
 
-#: bot\cogs\feature\imp.py:500
+#: bot\cogs\feature\imp.py:513
 msgid "咒文讀取"
 msgstr ""
