@@ -1,4 +1,4 @@
-py-cord >= 2.0.0
+py-cord >= 2.6.0
 
 rich
 click

@@ -8,6 +8,7 @@ from enum import Enum, auto
 from pathlib import Path
 from typing import TYPE_CHECKING, ClassVar, TypeVar, overload
 
+import discord
 from discord import ApplicationContext as DiscordApplicationContext
 from discord import Cog, ContextMenuCommand, Member, SlashCommand, User
 from discord.commands.core import docs, valid_locales
@@ -271,14 +272,14 @@ def cog_i18n(cls: type | Translator | None = None):
 def i18n_command(command: _CommandT) -> _CommandT:
     kwargs = command.__original_kwargs__
 
-    if command.name_localizations is None:
+    if command.name_localizations is discord.utils.MISSING:
         command.name_localizations = {}
 
     if isinstance(name := kwargs.get("i18n_name", None), TranslatorString):
         command.name_localizations |= dict(name)
 
     if isinstance(command, SlashCommand):
-        if command.description_localizations is None:
+        if command.description_localizations is discord.utils.MISSING:
             command.description_localizations = {}
 
         if isinstance(description := kwargs.get("i18n_description"), TranslatorString):
@@ -286,12 +287,12 @@ def i18n_command(command: _CommandT) -> _CommandT:
 
         for option in command.options:
             if isinstance(option.name, TranslatorString):
-                if option.name_localizations is None:
+                if option.name_localizations is discord.utils.MISSING:
                     command.name_localizations = {}
                 command.name_localizations |= dict(option.name)
 
             if isinstance(option.description, TranslatorString):
-                if option.description_localizations is None:
+                if option.description_localizations is discord.utils.MISSING:
                     command.description_localizations = {}
                 command.description_localizations |= dict(option.description)
 
