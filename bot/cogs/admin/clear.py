@@ -9,9 +9,9 @@ _ = Translator(__name__)
 @cog_i18n
 class ClearCog(BaseCog, name="管理"):
     @discord.slash_command(
-        guild_only=True,
         i18n_name=_("刪除"),
         i18n_description=_("刪除一個訊息"),
+        contexts={discord.InteractionContextType.guild}
     )
     @discord.default_permissions(manage_messages=True)
     @discord.option(
@@ -51,9 +51,9 @@ class ClearCog(BaseCog, name="管理"):
         await ctx.respond(embed=embed, ephemeral=True)
 
     @discord.slash_command(
-        guild_only=True,
         i18n_name=_("批量刪除"),
         i18n_description=_("刪除大量訊息"),
+        contexts={discord.InteractionContextType.guild}
     )
     @discord.default_permissions(manage_messages=True)
     @discord.option(

@@ -110,7 +110,7 @@ class BaseCommandsCog(BaseCog, name="核心"):
             view=CogConnectionView(self.bot),
         )
 
-    @discord.slash_command(guild_only=True)
+    @discord.slash_command(contexts={discord.InteractionContextType.guild})
     @discord.option(
         "command",
         str,

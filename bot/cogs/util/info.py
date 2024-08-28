@@ -11,9 +11,9 @@ _ = Translator(__name__)
 @cog_i18n
 class InfoCog(BaseCog, name="雜項", description=""):
     @discord.slash_command(
-        guild_only=True,
         i18n_name=_("上線時間"),
         i18n_description=_("查看機器人上線時間"),
+        contexts={discord.InteractionContextType.guild}
     )
     async def uptime(self, ctx: ApplicationContext):
         uptime: timedelta = datetime.now() - self.bot.uptime
@@ -38,7 +38,6 @@ class InfoCog(BaseCog, name="雜項", description=""):
         await ctx.respond(embed=embed, ephemeral=True)
 
     @discord.slash_command(
-        guild_only=False,
         i18n_name=_("邀請連結"),
         i18n_description=_("生成邀請連結"),
     )
