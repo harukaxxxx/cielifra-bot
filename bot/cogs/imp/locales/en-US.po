@@ -13,11 +13,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: dpy-template 1.0.0\n"
 
-#: bot\cogs\feature\bookmark.py:34
-msgid "書籤"
-msgstr ""
-
-#: bot\cogs\feature\imp.py:361
+#: bot/cogs/imp/imp.py:361
 #, python-format
 msgid ""
 "無限魔法投影已超出負荷，Cielifra 的法力正在耗盡！\n"
@@ -28,6 +24,6 @@ msgstr ""
 "Please download the PNG manually and place it in the sd-webui PNG INFO tab to obtain the parameters.\n"
 "The original link to the message is:{message_link}"
 
-#: bot\cogs\feature\imp.py:513
+#: bot/cogs/imp/imp.py:513
 msgid "咒文讀取"
 msgstr ""
